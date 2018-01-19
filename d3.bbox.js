@@ -2,7 +2,7 @@
 // Licensed under the MIT License (MIT)
 // Version 1.0
 
-var root = (typeof exports !== "undefined" && exports !== null) ? exports : this
+var root = (typeof module.exports !== "undefined" && module.exports !== null) ? module.exports : this
 if (!root.d3lb) {
     root.d3lb = {}
 }
@@ -235,4 +235,3 @@ root.d3lb.bbox = function () {
 
     return my
 }
-
