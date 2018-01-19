@@ -2,12 +2,14 @@
 // Licensed under the MIT License (MIT)
 // Version 1.0
 
+const d3 = require("d3");
+
 var root = (typeof module.exports !== "undefined" && module.exports !== null) ? module.exports : this
 if (!root.d3lb) {
     root.d3lb = {}
 }
 
-root.d3lb.bbox = function () {
+root.bbox = function () {
     // All those are initialized to default further down using the setters.
     var xextent = null
     var yextent = null
@@ -24,11 +26,15 @@ root.d3lb.bbox = function () {
     }
 
     function my(selection) {
-        var drag = d3.behavior.drag()
-            .origin(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
+        //var drag = d3.behavior.drag()
+        // drag behavior renamed in D3 v4
+        var drag = d3.drag()
+            //.origin(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
+            // .origin replaced with .subject in D3 v4
+            .subject(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
             .on("drag.lbbbox", dragmove)
-            .on("dragstart.lbbbox", dragstart)
-            .on("dragend.lbbbox", dragend)
+            .on("start.lbbbox", dragstart)
+            .on("end.lbbbox", dragend)
         selection.call(drag)
         selection.on("mousemove.lbbbox", move)
         selection.on("mouseleave.lbbbox", leave)
