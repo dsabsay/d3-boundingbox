@@ -3,15 +3,31 @@
   "description": "Easy \"bounding-box\" type of interaction for d3js elements",
   "version": "1.0.0",
   "maintainers": [
-    {
-      "name": "Lucas Beyer",
-      "email": "lucasb.eyer.be@gmail.com",
-      "web": "http://lucasb.eyer.be"
-    }
+    "Lucas Beyer <lucasb.eyer.be@gmail.com> (http://lucasb.eyer.be)"
   ],
   "demos": [
     "http://lucasb.eyer.be/lab/d3-boundingbox.html",
     "test.html"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "main": "d3.bbox.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsabsay/d3-boundingbox.git"
+  },
+  "keywords": [
+    "d3",
+    "boundingbox"
+  ],
+  "author": "Lucas Beyer <lucasb.eyer.be@gmail.com> (http://lucasb.eyer.be)",
+  "bugs": {
+    "url": "https://github.com/dsabsay/d3-boundingbox/issues"
+  },
+  "homepage": "https://github.com/dsabsay/d3-boundingbox#readme",
+  "dependencies": {
+    "d3": "^4.12.2"
+  }
 }
