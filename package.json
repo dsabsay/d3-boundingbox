@@ -29,5 +29,11 @@
   "homepage": "https://github.com/dsabsay/d3-boundingbox#readme",
   "dependencies": {
     "d3": "^4.12.2"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.9.0",
+    "coffeescript": "^2.2.1",
+    "d3-selection-multi": "^1.0.1",
+    "webpack": "^3.11.0"
   }
 }

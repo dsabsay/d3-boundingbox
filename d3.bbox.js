@@ -4,7 +4,8 @@
 
 const d3 = require("d3");
 
-var root = (typeof module.exports !== "undefined" && module.exports !== null) ? module.exports : this
+var root = (typeof module.exports !== "undefined" && module.exports !== null)
+    ? module.exports : this
 if (!root.d3lb) {
     root.d3lb = {}
 }

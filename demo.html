@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8 />
+    <meta name=author content="Lucas Beyer" />
+
+    <style>
+        body {
+            color: #585858;
+            background-color: #e8e8e8;
+        }
+
+        h1 {
+            margin: 10px 0px;
+        }
+
+        svg {
+            border: 1px solid black;
+            vertical-align: top;
+        }
+
+        span {
+            display: inline-block;
+        }
+
+        rect {
+            fill: #585858;
+            stroke: #ffa500;
+            stroke-width: 10px;
+        }
+
+        line {
+            stroke: red;
+        }
+
+        a {
+            color: #6BD1FB;
+            text-decoration: none;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+
+            color: #e4e4e4;
+            background-color: #585858;
+            font-size: small;
+        }
+
+        #credit {
+            position: absolute;
+            right: 10px;
+        }
+    </style>
+
+    <script src="dist/bundle.js"></script>
+
+</head>
+<body>
+    <h1>A Demo of <code>d3lb.bbox</code> Behaviour</h1>
+
+    <svg id=labels>
+    </svg>
+
+    <span>
+      <p>
+        <label for=cursors><input type=checkbox id=cursors checked>Use cursors</label><br>
+        <label for=x><input type=checkbox id=x checked>Allow movement in X</label><br>
+        <label for=y><input type=checkbox id=y checked>Allow movement in Y</label><br>
+        <label for=w><input type=checkbox id=w checked>West</label><br>
+        <label for=nw><input type=checkbox id=nw checked>North/West</label><br>
+        <label for=n><input type=checkbox id=n checked>North</label><br>
+        <label for=ne><input type=checkbox id=ne checked>North/East</label><br>
+        <label for=e><input type=checkbox id=e checked>East</label><br>
+        <label for=se><input type=checkbox id=se checked>South/East</label><br>
+        <label for=s><input type=checkbox id=s checked>South</label><br>
+        <label for=sw><input type=checkbox id=sw checked>South/West</label><br>
+        <label for=ex><input type=checkbox id=ex>Restrict horizontal extent</label><br>
+        <label for=ey><input type=checkbox id=ey>Restrict vertical extent</label><br>
+      </p><p>
+        <label for=r><input type=number id=r value=3 step=1 min=0>Radius</label>
+      </p><p>
+        <label for=dragstart><code>dragstart</code> events: <span id=dragstart>0</span></label><br>
+        <label for=dragmove><code>dragmove</code> events: <span id=dragmove>0</span></label> (<label for=dragdist>Total distance: <span id=dragdist>0</span>px</label>)<br>
+        <label for=dragend><code>dragend</code> events: <span id=dragend>0</span></label><br>
+        <label for=resizestart><code>resizestart</code> events: <span id=resizestart>0</span></label><br>
+        <label for=resizemove><code>resizemove</code> events: <span id=resizemove>0</span></label><br>
+        <label for=resizeend><code>resizeend</code> events: <span id=resizeend>0</span></label><br>
+      </p>
+    </span>
+
+    <footer>(Debug)
+      d3.mouse(): <span id=mouse></span>
+      <span id=credit>© <a href=http://lb.eyer.be>Lucas Beyer</a></span>
+    </footer>
+
+    <!-- I fucking hotlink to master in production. -->
+    <!--
+    <script src=deps/d3.v3.min.js></script>
+    <script src=deps/coffee-script.js></script>
+    -->
+
+</body>
+</html>
