@@ -25,24 +25,36 @@ root.bbox = function () {
         resizemove: null,
         resizeend: null
     }
-    var _translate = null
+    var _translate = null;
+    var _rotate = null;
     var _translate_x = 0;
     var _translate_y = 0;
-    //var _rotate = null
 
     function my(selection) {
 
-        // add the translate group
         console.log('selection: ', selection)
+
+        // add the translate group
         selection.each(function() {
             var el = this;
             _translate = d3.select(el.parentNode)
                 .insert('g')
                 .classed('bbox-translate', true);
 
-            _translate
+            _rotate = _translate
+                .insert('g')
+                .classed('bbox-rotate', true);
+
+            _rotate
                 .append(function() { return el; });
         });
+
+        // test the rotation
+        var width = selection.attr('width');
+        var height = selection.attr('height');
+
+        _rotate.attr('transform',
+                'rotate(45,' + (width / 2) + ',' + (height / 2) + ')');
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -206,6 +218,9 @@ root.bbox = function () {
                     'translate(' + _translate_x + ',' + _translate_y + ')');
 
         // Now check for all possible resizes.
+        // TODO: maybe this needs to be a separate drag event with a different
+        //       container defined on the drag behavior. The container should be
+        //       the rect itself.
         } else {
             var x = +this.getAttribute("x")
             var y = +this.getAttribute("y")
