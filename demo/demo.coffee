@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import 'd3-selection-multi'
 import * as d3lb from '../d3.bbox.js'
 
 #document.addEventListener("DOMContentLoaded", makeDemo)
