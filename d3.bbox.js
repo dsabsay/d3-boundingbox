@@ -25,6 +25,8 @@ root.bbox = function () {
         resizemove: null,
         resizeend: null
     }
+    var _translate = null
+    //var _rotate = null
 
     function my(selection) {
         //var drag = d3.behavior.drag()
@@ -39,6 +41,18 @@ root.bbox = function () {
         selection.call(drag)
         selection.on("mousemove.lbbbox", move)
         selection.on("mouseleave.lbbbox", leave)
+
+        // add the translate group
+        console.log('selection: ', selection)
+        selection.each(function() {
+            var el = this;
+            _translate = d3.select(el.parentNode)
+                .insert('g')
+                .classed('bbox-translate', true);
+
+            _translate
+                .append(function() { return el; });
+        });
 
         return selection
     }
@@ -144,9 +158,23 @@ root.bbox = function () {
         if(this.__resize_action__ == "M") {
             if(dirs.indexOf("x") > -1 && d3.event.dx != 0)
                 // This is so that even moving the mouse super-fast, this still "sticks" to the extent.
-                this.setAttribute("x", clamp(clamp(d3.event.x, xext) + this.__ow__, xext) - this.__ow__)
+                /*
+                this.setAttribute("x", clamp(clamp(d3.event.x, xext) + this.__ow__,
+                            xext) - this.__ow__)
+                */
+                var x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
+                    - this.__ow__
+                _translate.attr('transform', 'translate(' + x + ', 0)');
+
             if(dirs.indexOf("y") > -1 && d3.event.dy != 0)
-                this.setAttribute("y", clamp(clamp(d3.event.y, yext) + this.__oh__, yext) - this.__oh__)
+                this.setAttribute("y", clamp(clamp(d3.event.y, yext) + this.__oh__,
+                            yext) - this.__oh__)
+
+                /*
+                var y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
+                    - this.__oh__
+                _translate.attr('transform', 'translate
+                */
         // Now check for all possible resizes.
         } else {
             var x = +this.getAttribute("x")

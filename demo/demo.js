@@ -19,8 +19,9 @@ function makeDemo() {
       .attrs({transform: "translate(10,20)"});
 
     var rects = d3.select('g').selectAll('rect')
-      .data([{x: 20, y: 20, w: 40, h: 40},
-             {x: 50, y: 90, w: 50, h: 60}])
+      .data([{x: 20, y: 20, w: 40, h: 40}])
+      //.data([{x: 20, y: 20, w: 40, h: 40},
+      //       {x: 50, y: 90, w: 50, h: 60}])
       .enter()
       .append('rect');
 
@@ -35,7 +36,9 @@ function makeDemo() {
 
     console.log(rects);
 
-    const bb = d3lb.bbox().infect(rects);
+    //const bb = d3lb.bbox().infect(rects);
+    var bb = d3lb.bbox().infect(rects);
+
     // Alternatively:
     //bb = d3lb.bbox()
     //rects.call bb
