@@ -26,21 +26,11 @@ root.bbox = function () {
         resizeend: null
     }
     var _translate = null
+    var _translate_x = 0;
+    var _translate_y = 0;
     //var _rotate = null
 
     function my(selection) {
-        //var drag = d3.behavior.drag()
-        // drag behavior renamed in D3 v4
-        var drag = d3.drag()
-            //.origin(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
-            // .origin replaced with .subject in D3 v4
-            .subject(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
-            .on("drag.lbbbox", dragmove)
-            .on("start.lbbbox", dragstart)
-            .on("end.lbbbox", dragend)
-        selection.call(drag)
-        selection.on("mousemove.lbbbox", move)
-        selection.on("mouseleave.lbbbox", leave)
 
         // add the translate group
         console.log('selection: ', selection)
@@ -53,6 +43,34 @@ root.bbox = function () {
             _translate
                 .append(function() { return el; });
         });
+
+        // Capture the parent SVG element.
+        var element = selection.node();
+        while (element.tagName.toLowerCase() !== 'svg') {
+            element = element.parentElement;
+        }
+        _svg = element;
+
+        //var drag = d3.behavior.drag()
+        // drag behavior renamed in D3 v4
+        var drag = d3.drag()
+            //.origin(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
+            // .origin replaced with .subject in D3 v4
+            //.subject(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
+            .container(_svg)
+            .subject(function(d, i) {
+                return {
+                    x: _translate_x,
+                    y: _translate_y
+                };
+            })
+            .on("drag.lbbbox", dragmove)
+            .on("start.lbbbox", dragstart)
+            .on("end.lbbbox", dragend);
+
+        selection.call(drag);
+        selection.on("mousemove.lbbbox", move);
+        selection.on("mouseleave.lbbbox", leave);
 
         return selection
     }
@@ -156,25 +174,37 @@ root.bbox = function () {
 
         // Handle moving around first, more easily.
         if(this.__resize_action__ == "M") {
+
+            //var mouse = d3.mouse(_svg);
+
             if(dirs.indexOf("x") > -1 && d3.event.dx != 0)
                 // This is so that even moving the mouse super-fast, this still "sticks" to the extent.
                 /*
                 this.setAttribute("x", clamp(clamp(d3.event.x, xext) + this.__ow__,
                             xext) - this.__ow__)
                 */
-                var x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
+
+                console.log('d3.event.sourceEvent.target: ',
+                        d3.event.sourceEvent.target);
+                console.log('d3.event.x: ', d3.event.x);
+
+                //_translate_x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
+                _translate_x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
                     - this.__ow__
-                _translate.attr('transform', 'translate(' + x + ', 0)');
 
             if(dirs.indexOf("y") > -1 && d3.event.dy != 0)
+                /*
                 this.setAttribute("y", clamp(clamp(d3.event.y, yext) + this.__oh__,
                             yext) - this.__oh__)
-
-                /*
-                var y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
-                    - this.__oh__
-                _translate.attr('transform', 'translate
                 */
+
+                //_translate_y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
+                _translate_y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
+                    - this.__oh__
+
+            _translate.attr('transform',
+                    'translate(' + _translate_x + ',' + _translate_y + ')');
+
         // Now check for all possible resizes.
         } else {
             var x = +this.getAttribute("x")

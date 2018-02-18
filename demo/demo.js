@@ -15,11 +15,14 @@ function makeDemo() {
       height: H
     });
 
+    /*
     d3.select("svg").append('g')
       .attrs({transform: "translate(10,20)"});
+  */
 
-    var rects = d3.select('g').selectAll('rect')
-      .data([{x: 20, y: 20, w: 40, h: 40}])
+    //var rects = d3.select('g').selectAll('rect')
+    var rects = d3.select('svg').selectAll('rect')
+      .data([{x: 0, y: 0, w: 40, h: 40}])
       //.data([{x: 20, y: 20, w: 40, h: 40},
       //       {x: 50, y: 90, w: 50, h: 60}])
       .enter()
