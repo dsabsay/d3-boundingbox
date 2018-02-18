@@ -13,5 +13,6 @@ module.exports = {
                 use: [ 'coffee-loader' ]
             }
         ]
-    }
+    },
+    watch: true
 };

@@ -25,10 +25,13 @@ root.bbox = function () {
         resizemove: null,
         resizeend: null
     }
-    var _translate = null;
-    var _rotate = null;
+    var _translate_g = null;
+    var _rotate_g = null;
     var _translate_x = 0;
     var _translate_y = 0;
+    var _rotate_deg = 0;
+    var _width = null;
+    var _height = null;
 
     function my(selection) {
 
@@ -37,24 +40,23 @@ root.bbox = function () {
         // add the translate group
         selection.each(function() {
             var el = this;
-            _translate = d3.select(el.parentNode)
+            _translate_g = d3.select(el.parentNode)
                 .insert('g')
                 .classed('bbox-translate', true);
 
-            _rotate = _translate
+            _rotate_g = _translate_g
                 .insert('g')
                 .classed('bbox-rotate', true);
 
-            _rotate
+            _rotate_g
                 .append(function() { return el; });
         });
 
         // test the rotation
-        var width = selection.attr('width');
-        var height = selection.attr('height');
+        _width = selection.attr('width');
+        _height = selection.attr('height');
 
-        _rotate.attr('transform',
-                'rotate(45,' + (width / 2) + ',' + (height / 2) + ')');
+        _rotate({deg: 45});
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -169,6 +171,28 @@ root.bbox = function () {
             document.body.style.cursor = null
     }
 
+    /* Translates the bounding box. 
+     *
+     * NOTE: Currently, this doesn't implement extent constraints.
+     */
+    function _translate({x = _translate_x, y = _translate_y} = {}) {
+        _translate_x = x;
+        _translate_y = y;
+
+        _translate_g.attr('transform',
+                'translate(' + _translate_x + ',' + _translate_y + ')');
+    }
+
+    /* Rotates the bounding box.
+     */
+    function _rotate({deg = _rotate_deg} = {}) {
+        _rotate_deg = deg;
+
+        _rotate_g.attr('transform',
+                'rotate(' + _rotate_deg + ',' +
+                    (_width / 2) + ',' + (_height / 2) + ')');
+    }
+
     function dragmove(d, i) {
         if(this.__resize_action__ == "M") {
             if(cbs.dragmove)
@@ -187,35 +211,20 @@ root.bbox = function () {
         // Handle moving around first, more easily.
         if(this.__resize_action__ == "M") {
 
-            //var mouse = d3.mouse(_svg);
+            var x = _translate_x;
+            var y = _translate_y;
 
             if(dirs.indexOf("x") > -1 && d3.event.dx != 0)
-                // This is so that even moving the mouse super-fast, this still "sticks" to the extent.
-                /*
-                this.setAttribute("x", clamp(clamp(d3.event.x, xext) + this.__ow__,
-                            xext) - this.__ow__)
-                */
-
-                console.log('d3.event.sourceEvent.target: ',
-                        d3.event.sourceEvent.target);
-                console.log('d3.event.x: ', d3.event.x);
-
-                //_translate_x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
-                _translate_x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
+                // This is so that even moving the mouse super-fast,
+                // this still "sticks" to the extent.
+                x = clamp(clamp(d3.event.x, xext) + this.__ow__, xext)
                     - this.__ow__
 
             if(dirs.indexOf("y") > -1 && d3.event.dy != 0)
-                /*
-                this.setAttribute("y", clamp(clamp(d3.event.y, yext) + this.__oh__,
-                            yext) - this.__oh__)
-                */
-
-                //_translate_y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
-                _translate_y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
+                y = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
                     - this.__oh__
 
-            _translate.attr('transform',
-                    'translate(' + _translate_x + ',' + _translate_y + ')');
+            _translate({x: x, y: y});
 
         // Now check for all possible resizes.
         // TODO: maybe this needs to be a separate drag event with a different
@@ -223,14 +232,35 @@ root.bbox = function () {
         //       the rect itself.
         } else {
             var x = +this.getAttribute("x")
-            var y = +this.getAttribute("y")
+            //var y = +this.getAttribute("y")
+            var y = _translate_y
 
             // First, check for vertical resizes,
             if(/^n/.test(this.__resize_action__)) {
                 var b = y + +this.getAttribute("height")
-                var newy = clamp(clamp(d3.event.y, yext), [-Infinity, b-1])
-                this.setAttribute("y", newy)
-                this.setAttribute("height", b - newy)
+                //var newy = clamp(clamp(d3.event.y, yext), [-Infinity, b-1])
+                var newy = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
+                    - this.__oh__;
+                console.log('newy: ', newy);
+                //this.setAttribute("y", newy)
+
+                // Need to factor the angle of rotation into the translation!
+                // In other words, need to translate a little in both x and y,
+                // based on the angle of rotation.
+                _translate({y: newy});
+                _rotate();
+                _height = b - newy;
+                //this.setAttribute("height", b - newy)
+                this.setAttribute("height", _height);
+
+                ////////////////
+
+                /*
+                var dx = d3.event.x - _translate_x;
+                var dy = d3.event.y - _translate_y;
+                */
+
+
             } else if(/^s/.test(this.__resize_action__)) {
                 var b = clamp(d3.event.y + this.__oh__, yext)
                 this.setAttribute("height", clamp(b - y, [1, Infinity]))
