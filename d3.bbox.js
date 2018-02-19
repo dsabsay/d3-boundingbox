@@ -200,13 +200,73 @@ root.bbox = function () {
         return angle * (Math.PI / 180);
     }
 
+    /* Computes the angle between vectors.
+     *
+     * Vectors should be of the form [x, y].
+     */
+    function angleBetweenVectors(a, b) {
+        // Compute dot product
+        const aDotB = (a[0] * b[0]) + (a[1] * b[1]);
+
+        // Get vector magnitudes.
+        const magA = Math.sqrt((a[0] ** 2) + (a[1] ** 2));
+        const magB = Math.sqrt((b[0] ** 2) + (b[1] ** 2));
+
+        const theta = Math.acos(aDotB / (magA * magB));
+
+        return theta;
+    }
+
     /* Maps changes in mouse coordinates (dx, dy) in unrotated coordinate space
      * to a change in height for a rectangle in rotated coordinate space.
      *
      * rot is used as the angle of rotation, in degrees.
      */
     function _mouse_to_change_height(dx, dy, rot) {
-        return 'hi';
+        // Convert to up = positive y.
+        dy = -dy;
+        var d_theta = Math.atan(dy / dx);
+        var d_hyp = Math.sqrt((dx ** 2) + (dy ** 2));
+
+        //var alpha = toRadians(90) - (toRadians(rot) + d_theta);
+        //var alpha = d_theta - (toRadians(90) - toRadians(rot));
+        const normal = [1 * Math.cos(toRadians(rot)), 1 * Math.sin(toRadians(rot))];
+        var alpha = angleBetweenVectors([dx, dy], normal);
+        var d_height = d_hyp * Math.cos(alpha);
+
+        // Determine sign.
+        /*
+        var sign = null;
+        if ((dx > 0 && dy > 0) || (dx > 0 && dy < 0)) {
+            sign = 1;
+        else if ((
+        */
+
+        console.log('alpha: ', alpha);
+        //return sign * d_height;
+        var sign = null;
+        if (alpha > toRadians(-90) && alpha < toRadians(90)) {
+            sign = 1;
+        } else {
+            sign = -1;
+        }
+
+        console.log('sign: ', sign);
+
+        //return sign * d_height;
+        return d_height;
+    }
+
+    /* Computes the translation necessary when the box is resized from the top.
+     *
+     * rot is the angle of rotation of the box, in degrees.
+     */
+    function _get_translate_for_change_height(dh, rot) {
+        const omega = toRadians(90) - toRadians(rot);
+        const tdx = dh * Math.cos(omega);
+        const tdy = dh * Math.sin(omega);
+
+        return [tdx, tdy];
     }
 
     function dragmove(d, i) {
@@ -278,10 +338,11 @@ root.bbox = function () {
                  * the rotated y-axis of the _rotate_g element.
                  */
                 //var dx = d3.event.x - _translate_x;
-                var dx = d3.event.dx;
                 //var dy = d3.event.y - _translate_y;
-                var dy = d3.event.dy;
-                var dh = Math.sqrt((dx ** 2) + (dy ** 2));
+                const dx = d3.event.dx;
+                const dy = d3.event.dy;
+                //var dh = Math.sqrt((dx ** 2) + (dy ** 2));
+                const dh = _mouse_to_change_height(dx, dy, _rotate_deg);
 
                 _height += dh;
                 this.setAttribute("height", _height);
@@ -291,8 +352,11 @@ root.bbox = function () {
                  * _translate_g element in order to compensate for the change
                  * in height of the bounding box.
                  */
-                var dx_translate = dh * Math.cos(toRadians(_rotate_deg));
-                var dy_translate = dh * Math.sin(toRadians(_rotate_deg));
+                //var dx_translate = dh * Math.cos(toRadians(_rotate_deg));
+                //var dy_translate = dh * Math.sin(toRadians(_rotate_deg));
+                const d_translate = _get_translate_for_change_height(dh, _rotate_deg);
+                const dx_translate = d_translate[0];
+                const dy_translate = d_translate[1];
 
                 console.log('dx_translate: ', dx_translate);
                 console.log('dh: ', dh);
@@ -387,6 +451,8 @@ root.bbox = function () {
 
     /* Expose function to tests. */
     my._mouse_to_change_height = _mouse_to_change_height;
+    my._get_translate_for_change_height = _get_translate_for_change_height;
+    my.angleBetweenVectors = angleBetweenVectors;
     /* End exposing to tests. */
 
     return my
