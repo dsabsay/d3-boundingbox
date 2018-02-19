@@ -2,7 +2,8 @@
 // Licensed under the MIT License (MIT)
 // Version 1.0
 
-const d3 = require("d3");
+//const d3 = require("d3");
+import * as d3 from 'd3'
 
 var root = (typeof module.exports !== "undefined" && module.exports !== null)
     ? module.exports : this
@@ -25,6 +26,7 @@ root.bbox = function () {
         resizemove: null,
         resizeend: null
     }
+    var _svg = null;
     var _translate_g = null;
     var _rotate_g = null;
     var _translate_x = 0;
@@ -53,10 +55,10 @@ root.bbox = function () {
         });
 
         // test the rotation
-        _width = selection.attr('width');
-        _height = selection.attr('height');
+        _width = +selection.attr('width');
+        _height = +selection.attr('height');
 
-        _rotate({deg: 45});
+        _rotate({deg: 30});
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -193,6 +195,20 @@ root.bbox = function () {
                     (_width / 2) + ',' + (_height / 2) + ')');
     }
 
+    /* Converts degrees to radians. */
+    function toRadians(angle) {
+        return angle * (Math.PI / 180);
+    }
+
+    /* Maps changes in mouse coordinates (dx, dy) in unrotated coordinate space
+     * to a change in height for a rectangle in rotated coordinate space.
+     *
+     * rot is used as the angle of rotation, in degrees.
+     */
+    function _mouse_to_change_height(dx, dy, rot) {
+        return 'hi';
+    }
+
     function dragmove(d, i) {
         if(this.__resize_action__ == "M") {
             if(cbs.dragmove)
@@ -237,6 +253,8 @@ root.bbox = function () {
 
             // First, check for vertical resizes,
             if(/^n/.test(this.__resize_action__)) {
+
+                /*
                 var b = y + +this.getAttribute("height")
                 //var newy = clamp(clamp(d3.event.y, yext), [-Infinity, b-1])
                 var newy = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
@@ -252,14 +270,38 @@ root.bbox = function () {
                 _height = b - newy;
                 //this.setAttribute("height", b - newy)
                 this.setAttribute("height", _height);
+                */
 
                 ////////////////
 
-                /*
-                var dx = d3.event.x - _translate_x;
-                var dy = d3.event.y - _translate_y;
-                */
+                /* Compute height change based on how far the mouse moved along
+                 * the rotated y-axis of the _rotate_g element.
+                 */
+                //var dx = d3.event.x - _translate_x;
+                var dx = d3.event.dx;
+                //var dy = d3.event.y - _translate_y;
+                var dy = d3.event.dy;
+                var dh = Math.sqrt((dx ** 2) + (dy ** 2));
 
+                _height += dh;
+                this.setAttribute("height", _height);
+
+                /* Apply translation to keep box in the same position.
+                 * This determines what translation to apply to the un-rotated
+                 * _translate_g element in order to compensate for the change
+                 * in height of the bounding box.
+                 */
+                var dx_translate = dh * Math.cos(toRadians(_rotate_deg));
+                var dy_translate = dh * Math.sin(toRadians(_rotate_deg));
+
+                console.log('dx_translate: ', dx_translate);
+                console.log('dh: ', dh);
+                console.log('dx: ', dx);
+                console.log('d3.event.x: ', d3.event.x);
+
+                //_rotate();
+                _translate({x: _translate_x + dx_translate,
+                            y: _translate_y - dy_translate});
 
             } else if(/^s/.test(this.__resize_action__)) {
                 var b = clamp(d3.event.y + this.__oh__, yext)
@@ -342,6 +384,10 @@ root.bbox = function () {
         selection.on(".lbbbox", null)
         return my
     }
+
+    /* Expose function to tests. */
+    my._mouse_to_change_height = _mouse_to_change_height;
+    /* End exposing to tests. */
 
     return my
 }
