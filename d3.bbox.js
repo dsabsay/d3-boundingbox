@@ -217,41 +217,47 @@ root.bbox = function () {
         return theta;
     }
 
+    /* Returns the dot product of the 2D vectors a and b.
+     *
+     * Vectors should be of the form [x, y].
+     */
+    function dotProduct(a, b) {
+        return (a[0] * b[0]) + (a[1] * b[1]);
+    }
+
     /* Maps changes in mouse coordinates (dx, dy) in unrotated coordinate space
      * to a change in height for a rectangle in rotated coordinate space.
      *
-     * rot is used as the angle of rotation, in degrees.
+     * rot is the angle of rotation of the rotated coordinate space, in degrees.
      */
     function _mouse_to_change_height(dx, dy, rot) {
         // Convert to up = positive y.
         dy = -dy;
-        var d_theta = Math.atan(dy / dx);
-        var d_hyp = Math.sqrt((dx ** 2) + (dy ** 2));
 
-        //var alpha = toRadians(90) - (toRadians(rot) + d_theta);
-        //var alpha = d_theta - (toRadians(90) - toRadians(rot));
-        const normal = [1 * Math.cos(toRadians(rot)), 1 * Math.sin(toRadians(rot))];
-        var alpha = angleBetweenVectors([dx, dy], normal);
-        var d_height = d_hyp * Math.cos(alpha);
+        //const d_hyp = Math.sqrt((dx ** 2) + (dy ** 2));
 
-        // Determine sign.
+        const normal = [1 * Math.sin(toRadians(rot)), 1 * Math.cos(toRadians(rot))];
+        //const alpha = angleBetweenVectors([dx, dy], normal);
+        //const d_height = d_hyp * Math.cos(alpha);
+
+        // When the length of normal is 1, the equation
+        //      dh = mag(mouse) * cos(alpha)
+        // where mouse = [dx, dy], can be simplified to
+        //      dh = dotProduct(mouse, normal).
+        const d_height = dotProduct([dx, dy], normal);
+
+        //console.log('alpha: ', alpha);
+
         /*
-        var sign = null;
-        if ((dx > 0 && dy > 0) || (dx > 0 && dy < 0)) {
-            sign = 1;
-        else if ((
-        */
-
-        console.log('alpha: ', alpha);
-        //return sign * d_height;
         var sign = null;
         if (alpha > toRadians(-90) && alpha < toRadians(90)) {
             sign = 1;
         } else {
             sign = -1;
         }
+        */
 
-        console.log('sign: ', sign);
+        //console.log('sign: ', sign);
 
         //return sign * d_height;
         return d_height;
@@ -453,6 +459,7 @@ root.bbox = function () {
     my._mouse_to_change_height = _mouse_to_change_height;
     my._get_translate_for_change_height = _get_translate_for_change_height;
     my.angleBetweenVectors = angleBetweenVectors;
+    my.dotProduct = dotProduct;
     /* End exposing to tests. */
 
     return my

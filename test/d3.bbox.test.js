@@ -6,7 +6,7 @@ var assert = chai.assert;
 describe('_mouse_to_change_height', function() {
     it('should map mouse coordinates to change in height', function() {
         var dx = 4;
-        var dy = 3;
+        var dy = -3; // account for inverted y-axis
         var rot = 30;
 
         var bbox = d3lb.bbox();
@@ -61,4 +61,31 @@ describe('angleBetweenVectors', function() {
 
 });
 
+describe('dotProduct', function() {
+    it('should compute the dot product', function() {
+        const a = [1, 1];
+        const b = [0, -1];
+
+        const expected = -1;
+
+        var bbox = d3lb.bbox();
+        const result = bbox.dotProduct(a, b);
+
+        assert.equal(result, expected);
+    });
+
+    it('should compute the dot product', function() {
+        const a = [-5, 2.5];
+        const b = [1, 20.2];
+
+        const expected = 45.5;
+        const delta = 0.005;
+
+        var bbox = d3lb.bbox();
+        const result = bbox.dotProduct(a, b);
+
+        assert.approximately(result, expected, delta);
+    });
+
+});
 
