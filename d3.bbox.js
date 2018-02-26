@@ -58,7 +58,7 @@ root.bbox = function () {
         _width = +selection.attr('width');
         _height = +selection.attr('height');
 
-        _rotate({deg: 30});
+        _rotate({deg: 390});
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -186,6 +186,8 @@ root.bbox = function () {
     }
 
     /* Rotates the bounding box.
+     *
+     * NOTE: may need to restric to 0 <= deg <= 360 ?
      */
     function _rotate({deg = _rotate_deg} = {}) {
         _rotate_deg = deg;
@@ -226,19 +228,13 @@ root.bbox = function () {
     }
 
     /* Maps changes in mouse coordinates (dx, dy) in unrotated coordinate space
-     * to a change in height for a rectangle in rotated coordinate space.
-     *
-     * rot is the angle of rotation of the rotated coordinate space, in degrees.
+     * to a change in distance along a normal vector that is rotated by rot
+     * degrees from 0 in the clockwise direction.
      */
-    function _mouse_to_change_height(dx, dy, rot) {
-        // Convert to up = positive y.
-        dy = -dy;
-
-        //const d_hyp = Math.sqrt((dx ** 2) + (dy ** 2));
-
-        const normal = [1 * Math.sin(toRadians(rot)), 1 * Math.cos(toRadians(rot))];
-        //const alpha = angleBetweenVectors([dx, dy], normal);
-        //const d_height = d_hyp * Math.cos(alpha);
+    function _mouse_to_change_normal(dx, dy, rot) {
+        // y-component is negated because the y-axis is oriented with
+        // negative y pointing in the upward direction.
+        const normal = [1 * Math.sin(toRadians(rot)), -1 * Math.cos(toRadians(rot))];
 
         // When the length of normal is 1, the equation
         //      dh = mag(mouse) * cos(alpha)
@@ -246,31 +242,26 @@ root.bbox = function () {
         //      dh = dotProduct(mouse, normal).
         const d_height = dotProduct([dx, dy], normal);
 
-        //console.log('alpha: ', alpha);
-
-        /*
-        var sign = null;
-        if (alpha > toRadians(-90) && alpha < toRadians(90)) {
-            sign = 1;
-        } else {
-            sign = -1;
-        }
-        */
-
-        //console.log('sign: ', sign);
-
-        //return sign * d_height;
         return d_height;
     }
 
-    /* Computes the translation necessary when the box is resized from the top.
+    /* Computes the translation necessary when the box is resized.
+     * Returns the x- and y-components of the normal vector.
      *
-     * rot is the angle of rotation of the box, in degrees.
+     * dn = length of normal vector
+     * rot = angle in degrees by which the normal vector is rotated from 0
+     *       in the clockwise direction
      */
-    function _get_translate_for_change_height(dh, rot) {
+    function _get_translate_for_change_normal(dn, rot) {
+
+        // Get angle between normal and positive x-axis.
         const omega = toRadians(90) - toRadians(rot);
-        const tdx = dh * Math.cos(omega);
-        const tdy = dh * Math.sin(omega);
+
+        // scalar projection of normal onto positive x-axis
+        const tdx = dn * Math.cos(omega);
+
+        // equivalent to scalar projection of normal onto positive y-axis
+        const tdy =  - dn * Math.sin(omega);
 
         return [tdx, tdy];
     }
@@ -348,7 +339,12 @@ root.bbox = function () {
                 const dx = d3.event.dx;
                 const dy = d3.event.dy;
                 //var dh = Math.sqrt((dx ** 2) + (dy ** 2));
-                const dh = _mouse_to_change_height(dx, dy, _rotate_deg);
+                const dh = _mouse_to_change_normal(dx, dy, _rotate_deg);
+
+                // Don't allow resizing to 0.
+                if (_height + dh <= 0) {
+                    return;
+                }
 
                 _height += dh;
                 this.setAttribute("height", _height);
@@ -360,7 +356,7 @@ root.bbox = function () {
                  */
                 //var dx_translate = dh * Math.cos(toRadians(_rotate_deg));
                 //var dy_translate = dh * Math.sin(toRadians(_rotate_deg));
-                const d_translate = _get_translate_for_change_height(dh, _rotate_deg);
+                const d_translate = _get_translate_for_change_normal(dh, _rotate_deg);
                 const dx_translate = d_translate[0];
                 const dy_translate = d_translate[1];
 
@@ -371,22 +367,79 @@ root.bbox = function () {
 
                 //_rotate();
                 _translate({x: _translate_x + dx_translate,
-                            y: _translate_y - dy_translate});
+                            y: _translate_y + dy_translate});
 
             } else if(/^s/.test(this.__resize_action__)) {
+                // NOTE: The border is determined in whichborder().
+
+                /*
                 var b = clamp(d3.event.y + this.__oh__, yext)
                 this.setAttribute("height", clamp(b - y, [1, Infinity]))
+                */
+                const dx = d3.event.dx;
+                const dy = d3.event.dy;
+                const dh = _mouse_to_change_normal(dx, dy, _rotate_deg + 180);
+
+                // Don't allow resizing to 0.
+                if (_height + dh <= 0) {
+                    return;
+                }
+
+                _height += dh;
+                this.setAttribute("height", _height);
             }
 
             // and then for horizontal ones. Note both may happen.
             if(/w$/.test(this.__resize_action__)) {
+                /*
                 var r = x + +this.getAttribute("width")
                 var newx = clamp(clamp(d3.event.x, xext), [-Infinity, r-1])
                 this.setAttribute("x", newx)
                 this.setAttribute("width", r - newx)
+                */
+
+                const dx = d3.event.dx;
+                const dy = d3.event.dy;
+                const dw = _mouse_to_change_normal(dx, dy, _rotate_deg + 270);
+
+                // Don't allow resizing to 0.
+                if (_width + dw <= 0) {
+                    return;
+                }
+
+                _width += dw;
+                this.setAttribute("width", _width);
+
+                const d_translate = _get_translate_for_change_normal(dw, _rotate_deg + 270);
+                const dx_translate = d_translate[0];
+                const dy_translate = d_translate[1];
+
+                //_rotate();
+                _translate({x: _translate_x + dx_translate,
+                            y: _translate_y + dy_translate});
+
             } else if(/e$/.test(this.__resize_action__)) {
+                // NOTE: Translation is unnecessary here because the border is
+                //       determined solely by x, y mouse coordinates in
+                //       non-rotated coordinate space (so, rotation by 180
+                //       degrees, for example would still work).
+                
+                /*
                 var r = clamp(d3.event.x + this.__ow__, xext)
                 this.setAttribute("width", clamp(r - x, [1, Infinity]))
+                */
+                
+                const dx = d3.event.dx;
+                const dy = d3.event.dy;
+                const dw = _mouse_to_change_normal(dx, dy, _rotate_deg + 90);
+                
+                // Don't allow resizing to 0.
+                if (_width + dw <= 0) {
+                    return;
+                }
+
+                _width += dw;
+                this.setAttribute("width", _width);
             }
         }
     }
@@ -456,8 +509,8 @@ root.bbox = function () {
     }
 
     /* Expose function to tests. */
-    my._mouse_to_change_height = _mouse_to_change_height;
-    my._get_translate_for_change_height = _get_translate_for_change_height;
+    my._mouse_to_change_normal = _mouse_to_change_normal;
+    my._get_translate_for_change_normal = _get_translate_for_change_normal;
     my.angleBetweenVectors = angleBetweenVectors;
     my.dotProduct = dotProduct;
     /* End exposing to tests. */
