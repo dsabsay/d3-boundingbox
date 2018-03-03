@@ -2,7 +2,6 @@
 // Licensed under the MIT License (MIT)
 // Version 1.0
 
-//const d3 = require("d3");
 import * as d3 from 'd3'
 
 var root = (typeof module.exports !== "undefined" && module.exports !== null)
@@ -58,7 +57,7 @@ root.bbox = function () {
         _width = +selection.attr('width');
         _height = +selection.attr('height');
 
-        _rotate({deg: 390});
+        _rotate({deg: -30});
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -67,12 +66,8 @@ root.bbox = function () {
         }
         _svg = element;
 
-        //var drag = d3.behavior.drag()
         // drag behavior renamed in D3 v4
         var drag = d3.drag()
-            //.origin(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
-            // .origin replaced with .subject in D3 v4
-            //.subject(function(d, i) { return {x: this.getAttribute("x"), y: this.getAttribute("y")}; })
             .container(_svg)
             .subject(function(d, i) {
                 return {
@@ -300,45 +295,17 @@ root.bbox = function () {
             _translate({x: x, y: y});
 
         // Now check for all possible resizes.
-        // TODO: maybe this needs to be a separate drag event with a different
-        //       container defined on the drag behavior. The container should be
-        //       the rect itself.
         } else {
-            var x = +this.getAttribute("x")
-            //var y = +this.getAttribute("y")
-            var y = _translate_y
-
             // First, check for vertical resizes,
             if(/^n/.test(this.__resize_action__)) {
 
-                /*
-                var b = y + +this.getAttribute("height")
-                //var newy = clamp(clamp(d3.event.y, yext), [-Infinity, b-1])
-                var newy = clamp(clamp(d3.event.y, yext) + this.__oh__, yext)
-                    - this.__oh__;
-                console.log('newy: ', newy);
-                //this.setAttribute("y", newy)
-
-                // Need to factor the angle of rotation into the translation!
-                // In other words, need to translate a little in both x and y,
-                // based on the angle of rotation.
-                _translate({y: newy});
-                _rotate();
-                _height = b - newy;
-                //this.setAttribute("height", b - newy)
-                this.setAttribute("height", _height);
-                */
-
-                ////////////////
-
                 /* Compute height change based on how far the mouse moved along
-                 * the rotated y-axis of the _rotate_g element.
+                 * the rotated y-axis of the _rotate_g element. In other words,
+                 * how far the mouse moved in the direction of the vector
+                 * perpendicular to the top of the bounding box.
                  */
-                //var dx = d3.event.x - _translate_x;
-                //var dy = d3.event.y - _translate_y;
                 const dx = d3.event.dx;
                 const dy = d3.event.dy;
-                //var dh = Math.sqrt((dx ** 2) + (dy ** 2));
                 const dh = _mouse_to_change_normal(dx, dy, _rotate_deg);
 
                 // Don't allow resizing to 0.
@@ -354,16 +321,9 @@ root.bbox = function () {
                  * _translate_g element in order to compensate for the change
                  * in height of the bounding box.
                  */
-                //var dx_translate = dh * Math.cos(toRadians(_rotate_deg));
-                //var dy_translate = dh * Math.sin(toRadians(_rotate_deg));
                 const d_translate = _get_translate_for_change_normal(dh, _rotate_deg);
                 const dx_translate = d_translate[0];
                 const dy_translate = d_translate[1];
-
-                console.log('dx_translate: ', dx_translate);
-                console.log('dh: ', dh);
-                console.log('dx: ', dx);
-                console.log('d3.event.x: ', d3.event.x);
 
                 //_rotate();
                 _translate({x: _translate_x + dx_translate,
@@ -372,10 +332,6 @@ root.bbox = function () {
             } else if(/^s/.test(this.__resize_action__)) {
                 // NOTE: The border is determined in whichborder().
 
-                /*
-                var b = clamp(d3.event.y + this.__oh__, yext)
-                this.setAttribute("height", clamp(b - y, [1, Infinity]))
-                */
                 const dx = d3.event.dx;
                 const dy = d3.event.dy;
                 const dh = _mouse_to_change_normal(dx, dy, _rotate_deg + 180);
@@ -391,12 +347,6 @@ root.bbox = function () {
 
             // and then for horizontal ones. Note both may happen.
             if(/w$/.test(this.__resize_action__)) {
-                /*
-                var r = x + +this.getAttribute("width")
-                var newx = clamp(clamp(d3.event.x, xext), [-Infinity, r-1])
-                this.setAttribute("x", newx)
-                this.setAttribute("width", r - newx)
-                */
 
                 const dx = d3.event.dx;
                 const dy = d3.event.dy;
@@ -423,12 +373,10 @@ root.bbox = function () {
                 //       determined solely by x, y mouse coordinates in
                 //       non-rotated coordinate space (so, rotation by 180
                 //       degrees, for example would still work).
-                
-                /*
-                var r = clamp(d3.event.x + this.__ow__, xext)
-                this.setAttribute("width", clamp(r - x, [1, Infinity]))
-                */
-                
+                //       Resizing on the east border just causes the width
+                //       of the bounding box to grow on the right side
+                //       (no translation needed).
+               
                 const dx = d3.event.dx;
                 const dy = d3.event.dy;
                 const dw = _mouse_to_change_normal(dx, dy, _rotate_deg + 90);
