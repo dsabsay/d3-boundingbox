@@ -453,7 +453,7 @@ root.bbox = function () {
         return my
     }
 
-    my.infect = function(selection, options = null) {
+    my.infect = function(selection, options = {}) {
         selection.call(my, options)
         return my
     }
