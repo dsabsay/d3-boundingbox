@@ -34,11 +34,12 @@ root.bbox = function () {
     var _width = null;
     var _height = null;
 
-    function my(selection) {
+    function my(selection, options = {}) {
+        const x = (typeof options.x !== "undefined") ? options.x : 0;
+        const y = (typeof options.y !== "undefined") ? options.y : 0;
+        const deg = (typeof options.deg !== "undefined") ? options.deg : 0;
 
-        console.log('selection: ', selection)
-
-        // add the translate group
+        // add the translate and rotate groups
         selection.each(function() {
             var el = this;
             _translate_g = d3.select(el.parentNode)
@@ -53,11 +54,11 @@ root.bbox = function () {
                 .append(function() { return el; });
         });
 
-        // test the rotation
         _width = +selection.attr('width');
         _height = +selection.attr('height');
 
-        _rotate({deg: -30});
+        _translate({x: x, y: y})
+        _rotate({deg: deg});
 
         // Capture the parent SVG element.
         var element = selection.node();
@@ -445,8 +446,8 @@ root.bbox = function () {
         return my
     }
 
-    my.infect = function(selection) {
-        selection.call(my)
+    my.infect = function(selection, options = null) {
+        selection.call(my, options)
         return my
     }
 

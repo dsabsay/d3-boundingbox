@@ -40,7 +40,7 @@ function makeDemo() {
     console.log(rects);
 
     //const bb = d3lb.bbox().infect(rects);
-    var bb = d3lb.bbox().infect(rects);
+    var bb = d3lb.bbox().infect(rects, {x: 0, y: 0, deg: 30});
 
     // Alternatively:
     //bb = d3lb.bbox()
