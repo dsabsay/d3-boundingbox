@@ -42,6 +42,13 @@ root.bbox = function () {
         // add the translate and rotate groups
         selection.each(function() {
             var el = this;
+
+            /* Remove any translation applied to the rects.
+             * We only handle translation with the _translate_g.
+             */
+            d3.select(this).attr('x', 0);
+            d3.select(this).attr('y', 0);
+
             _translate_g = d3.select(el.parentNode)
                 .insert('g')
                 .classed('bbox-translate', true);
