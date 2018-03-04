@@ -199,4 +199,20 @@ describe('public functions', function() {
 
         assert.equal(result, expected);
     });
+
+    it('getSize() should return size', function() {
+        var rect = d3.select('#test-svg')
+            .append('rect')
+            .attr('width', 50.5)
+            .attr('height', 50);
+
+        var bbox = d3lb.bbox().infect(rect, {x: 25, y: 30, deg: 35});
+
+        const expected = {width: 50.5, height: 50};
+        const result = bbox.getSize();
+        const delta = 0.0005;
+
+        assert.approximately(result.width, expected.width, delta);
+        assert.approximately(result.height, expected.height, delta);
+    });
 });

@@ -213,6 +213,14 @@ root.bbox = function () {
         return _rotate_deg;
     }
 
+    /* Returns the size of the bounding box. */
+    function getSize() {
+        return {
+            width: _width,
+            height: _height
+        };
+    }
+
     /* Converts degrees to radians. */
     function toRadians(angle) {
         return angle * (Math.PI / 180);
@@ -480,6 +488,7 @@ root.bbox = function () {
     /* Expose public functions. */
     my.getCenter = getCenter;
     my.getRotation = getRotation;
+    my.getSize = getSize;
     /* End exposing public functions. */
 
     /* Expose function to tests. */
