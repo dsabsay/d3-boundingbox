@@ -1,5 +1,6 @@
 import chai from 'chai';
 import * as d3lb from '../d3.bbox.js'
+import * as d3 from 'd3'
 
 var assert = chai.assert;
 
@@ -153,3 +154,49 @@ describe('dotProduct', function() {
 
 });
 
+describe('public functions', function() {
+
+    /* Add SVG object to page. */
+    before(function() {
+        d3.select("body")
+            .append('svg')
+            .attr('id', 'test-svg')
+            .attr('width', 500)
+            .attr('height', 500);
+    });
+
+    after(function() {
+        d3.select('#test-svg').remove();
+    });
+
+    it('getCenter() should calculate center of box', function() {
+
+        var rect = d3.select('#test-svg')
+            .append('rect')
+            .attr('width', 50.5)
+            .attr('height', 50);
+
+        var bbox = d3lb.bbox().infect(rect, {x: 25, y: 30, deg: 35});
+
+        const expected = {x: 50.25, y: 55};
+        const result = bbox.getCenter();
+        const delta = 0.0005;
+
+        assert.approximately(result.x, expected.x, delta);
+        assert.approximately(result.y, expected.y, delta);
+    });
+
+    it('getRotation() should return rotation', function() {
+        var rect = d3.select('#test-svg')
+            .append('rect')
+            .attr('width', 50.5)
+            .attr('height', 50);
+
+        var bbox = d3lb.bbox().infect(rect, {x: 25, y: 30, deg: 35});
+
+        const expected = 35;
+        const result = bbox.getRotation();
+
+        assert.equal(result, expected);
+    });
+});

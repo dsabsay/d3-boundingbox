@@ -200,6 +200,19 @@ root.bbox = function () {
                     (_width / 2) + ',' + (_height / 2) + ')');
     }
 
+    /* Returns the center of the box, relative to the SVG viewport. */
+    function getCenter() {
+        return {
+            x: _translate_x + (_width / 2),
+            y: _translate_y + (_height / 2)
+        };
+    }
+
+    /* Returns the rotation, in degrees, of the bounding box. */
+    function getRotation() {
+        return _rotate_deg;
+    }
+
     /* Converts degrees to radians. */
     function toRadians(angle) {
         return angle * (Math.PI / 180);
@@ -463,6 +476,11 @@ root.bbox = function () {
         selection.on(".lbbbox", null)
         return my
     }
+
+    /* Expose public functions. */
+    my.getCenter = getCenter;
+    my.getRotation = getRotation;
+    /* End exposing public functions. */
 
     /* Expose function to tests. */
     my._mouse_to_change_normal = _mouse_to_change_normal;
