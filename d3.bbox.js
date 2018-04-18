@@ -200,7 +200,9 @@ root.bbox = function () {
                     (_width / 2) + ',' + (_height / 2) + ')');
     }
 
-    /* Returns the center of the box, relative to the SVG viewport. */
+    /* Returns the center of the box, relative to the SVG user
+     * coordinate system.
+     */
     function getCenter() {
         return {
             x: _translate_x + (_width / 2),
